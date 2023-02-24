@@ -1,0 +1,7 @@
+micronaut:
+  application:
+    name: mnStockBroker
+netty:
+  default:
+    allocator:
+      max-order: 3
