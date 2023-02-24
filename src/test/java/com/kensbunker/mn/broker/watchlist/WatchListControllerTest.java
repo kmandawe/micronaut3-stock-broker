@@ -20,8 +20,7 @@ import org.slf4j.LoggerFactory;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import static io.micronaut.http.HttpRequest.GET;
-import static io.micronaut.http.HttpRequest.PUT;
+import static io.micronaut.http.HttpRequest.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @MicronautTest
@@ -51,24 +50,20 @@ class WatchListControllerTest {
 
   @Test
   void returnsWatchListForTestAccount() {
-    inMemoryAccountStore.updateWatchList(
-            TEST_ACCOUNT_ID,
-            new WatchList(Stream.of("AAPL", "GOOGL", "MSFT").map(Symbol::new).toList()));
+    givenWatchListForAccountExists();
 
     var response = client.toBlocking().exchange("/", JsonNode.class);
     assertEquals(HttpStatus.OK, response.getStatus());
     assertEquals("""
             {
               "symbols" : [ {
-                "value": "AAPL"
+                "value" : "AAPL"
               }, {
-                "value": "GOOGL"
+                "value" : "GOOGL"
               }, {
-                "value": "MSFT"
-              }
-              ]
-            }
-            """, response.getBody().get().toPrettyString());
+                "value" : "MSFT"
+              } ]
+            }""", response.getBody().get().toPrettyString());
   }
   
   @Test
@@ -80,5 +75,21 @@ class WatchListControllerTest {
     final HttpResponse<Object> added = client.toBlocking().exchange(request);
     assertEquals(HttpStatus.OK, added.getStatus());
     assertEquals(symbols, inMemoryAccountStore.getWatchList(TEST_ACCOUNT_ID).symbols());
+  }
+  
+  @Test
+  void canDeleteWatchListForTestAccount() {
+    givenWatchListForAccountExists();
+    assertFalse(inMemoryAccountStore.getWatchList(TEST_ACCOUNT_ID).symbols().isEmpty());
+
+    var deleted = client.toBlocking().exchange(DELETE("/"));
+    assertEquals(HttpStatus.NO_CONTENT, deleted.getStatus());
+    assertTrue(inMemoryAccountStore.getWatchList(TEST_ACCOUNT_ID).symbols().isEmpty());
+  }
+
+  private void givenWatchListForAccountExists() {
+    inMemoryAccountStore.updateWatchList(
+            TEST_ACCOUNT_ID,
+            new WatchList(Stream.of("AAPL", "GOOGL", "MSFT").map(Symbol::new).toList()));
   }
 }
