@@ -34,7 +34,7 @@ public class SymbolsController {
     return inMemoryStore.getSymbols().values()
             .stream()
             .skip(offset.orElse(0))
-            .limit(max.orElse(0))
+            .limit(max.orElse(10))
             .toList();
   }
   
