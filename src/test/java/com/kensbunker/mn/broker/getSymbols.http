@@ -1,1 +1,1 @@
-GET localhost:8080/symbols
+GET localhost:8080/symbols/ABC
