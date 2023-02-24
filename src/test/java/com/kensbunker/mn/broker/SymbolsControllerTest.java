@@ -18,8 +18,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @MicronautTest
 class SymbolsControllerTest {
-  
-  Logger LOG = LoggerFactory.getLogger(SymbolsControllerTest.class);
+
+  private static final Logger LOG = LoggerFactory.getLogger(SymbolsControllerTest.class);
 
   @Inject
   @Client("/symbols")
