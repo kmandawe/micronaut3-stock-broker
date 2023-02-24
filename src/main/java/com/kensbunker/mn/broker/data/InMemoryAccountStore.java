@@ -1,9 +1,11 @@
 package com.kensbunker.mn.broker.data;
 
+import com.kensbunker.mn.broker.wallet.DepositFiatMoney;
 import com.kensbunker.mn.broker.wallet.Wallet;
 import com.kensbunker.mn.broker.watchlist.WatchList;
 import jakarta.inject.Singleton;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 @Singleton
@@ -28,5 +30,23 @@ public class InMemoryAccountStore {
 
   public Collection<Wallet> getWallets(UUID accountId) {
     return Optional.ofNullable(walletsPerAccount.get(accountId)).orElse(new HashMap<>()).values();
+  }
+
+  public Wallet depositToWallet(DepositFiatMoney deposit) {
+    final var wallets =
+        Optional.ofNullable(walletsPerAccount.get(deposit.accountId())).orElse(new HashMap<>());
+    var oldWallet = Optional.ofNullable(wallets.get(deposit.walletId()))
+            .orElse(
+                    new Wallet(
+                            ACCOUNT_ID,
+                            deposit.walletId(),
+                            deposit.symbol(),
+                            BigDecimal.ZERO,
+                            BigDecimal.ZERO));
+    var newWallet = oldWallet.addAvailable(deposit.amount());
+    // Update wallet in store
+    wallets.put(newWallet.walletId(), newWallet);
+    walletsPerAccount.put(newWallet.accountId(), wallets);
+    return newWallet;
   }
 }

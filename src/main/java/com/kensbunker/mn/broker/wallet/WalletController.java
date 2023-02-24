@@ -1,6 +1,7 @@
 package com.kensbunker.mn.broker.wallet;
 
 import com.kensbunker.mn.broker.data.InMemoryAccountStore;
+import com.kensbunker.mn.broker.wallet.api.RestApiResponse;
 import com.kensbunker.mn.broker.wallet.error.CustomError;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.HttpStatus;
@@ -9,6 +10,8 @@ import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.List;
@@ -17,6 +20,8 @@ import static com.kensbunker.mn.broker.data.InMemoryAccountStore.ACCOUNT_ID;
 
 @Controller("/account/wallets")
 public record WalletController(InMemoryAccountStore store) {
+    private static final Logger LOG = LoggerFactory.getLogger(WalletController.class);
+    
     public static final List<String> SUPPORTED_FIAT_CURRENCIES = List.of("EUR", "USD", "CHF", "GBP");
     
     @Get(produces = MediaType.APPLICATION_JSON)
@@ -25,7 +30,7 @@ public record WalletController(InMemoryAccountStore store) {
     }
     
     @Post(value = "/deposit", consumes = MediaType.APPLICATION_JSON, produces = MediaType.APPLICATION_JSON)
-    public HttpResponse<CustomError> depositFiatMoney(@Body DepositFiatMoney deposit) {
+    public HttpResponse<RestApiResponse> depositFiatMoney(@Body DepositFiatMoney deposit) {
         // Option 1: Custom HttpResponse
         if (!SUPPORTED_FIAT_CURRENCIES.contains(deposit.symbol().value())) {
             return HttpResponse.badRequest()
@@ -33,7 +38,10 @@ public record WalletController(InMemoryAccountStore store) {
                             "UNSUPPORTED_FIAT_CURRENCY",
                             String.format("Only %s are supported", SUPPORTED_FIAT_CURRENCIES)));
         }
-        return HttpResponse.ok();
+        
+        var wallet = store.depositToWallet(deposit);
+        LOG.debug("Deposit to wallet: {}", wallet);
+        return HttpResponse.ok().body(wallet);
     }
 
     @Post(value = "/withdraw", consumes = MediaType.APPLICATION_JSON, produces = MediaType.APPLICATION_JSON)
