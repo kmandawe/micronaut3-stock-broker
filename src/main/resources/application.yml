@@ -22,3 +22,20 @@ netty:
 hello:
   service:
     greeting: "Hello from HelloService!"
+  world:
+    message: "Hello from application.yml"
+    translation:
+      de: "Hello Welt"
+      en: "Hello World"
+# JSON Settings
+jackson:
+  #  property-naming-strategy: SNAKE_CASE
+  serialization:
+    writeDatesAsTimestamps: false
+    writeDatesWithZoneId: true
+    writeDateTimestampsAsNanoseconds: false
+  generator:
+    writeNumbersAsStrings: false
+    writeBigDecimalAsPlain: false
+  deserialization:
+    failOnUnknownProperties: false
