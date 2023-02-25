@@ -5,3 +5,6 @@ netty:
   default:
     allocator:
       max-order: 3
+hello:
+  service:
+    greeting: "Hello from HelloService!"

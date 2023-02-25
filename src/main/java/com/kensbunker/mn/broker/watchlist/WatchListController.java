@@ -4,9 +4,11 @@ import com.kensbunker.mn.broker.data.InMemoryAccountStore;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.*;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.UUID;
 
+@Slf4j
 @Controller("/account/watchlist")
 public record WatchListController(InMemoryAccountStore store) {
     
@@ -14,6 +16,7 @@ public record WatchListController(InMemoryAccountStore store) {
     
     @Get(produces = MediaType.APPLICATION_JSON)
     public WatchList get() {
+        log.debug("get - {}",Thread.currentThread().getName());
         return store.getWatchList(ACCOUNT_ID);
     }
     
