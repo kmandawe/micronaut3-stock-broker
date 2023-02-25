@@ -1,5 +1,6 @@
 package com.kensbunker.mn;
 
+import com.kensbunker.mn.hello.HelloWorldService;
 import io.micronaut.context.ApplicationContext;
 import io.micronaut.runtime.Micronaut;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;

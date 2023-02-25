@@ -7,6 +7,8 @@ import io.micronaut.http.annotation.*;
 import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.micronaut.scheduling.exceptions.TaskExecutionException;
+import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.rules.SecurityRule;
 import io.reactivex.rxjava3.core.Scheduler;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -16,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
+@Secured(SecurityRule.IS_AUTHENTICATED)
 @Slf4j
 @Controller("/account/watchlist-reactive")
 public class WatchListControllerReactive {

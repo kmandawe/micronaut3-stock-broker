@@ -4,10 +4,13 @@ import com.kensbunker.mn.broker.data.InMemoryAccountStore;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.*;
+import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.rules.SecurityRule;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.UUID;
 
+@Secured(SecurityRule.IS_AUTHENTICATED)
 @Slf4j
 @Controller("/account/watchlist")
 public record WatchListController(InMemoryAccountStore store) {

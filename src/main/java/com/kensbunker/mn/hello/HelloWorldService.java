@@ -1,4 +1,4 @@
-package com.kensbunker.mn;
+package com.kensbunker.mn.hello;
 
 import io.micronaut.context.annotation.Property;
 import io.micronaut.context.event.StartupEvent;
