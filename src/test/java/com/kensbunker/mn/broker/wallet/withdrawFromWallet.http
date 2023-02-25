@@ -1,11 +1,11 @@
-POST localhost:8080/account/wallets/deposit
+POST localhost:8080/account/wallets/withdraw
 Content-Type: application/json
 
 {
-  "account_id": "f4245629-83df-4ed8-90d9-7401045b5921",
-  "wallet_id": "f42456302-83df-4ed8-90d9-7401045b5123",
+  "accountId": "f4245629-83df-4ed8-90d9-7401045b5921",
+  "walletId": "f4245630-83df-4ed8-90d9-7401045b5123",
   "symbol": {
-    "value": "EUR"
+    "value": "ABC"
   },
   "amount": -50
 }
