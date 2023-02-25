@@ -1,5 +1,6 @@
 package com.kensbunker.mn.broker.watchlist;
 
+import com.kensbunker.mn.broker.JWTWatchListClient;
 import com.kensbunker.mn.broker.Symbol;
 import com.kensbunker.mn.broker.data.InMemoryAccountStore;
 import io.micronaut.http.HttpRequest;
@@ -33,7 +34,7 @@ class WatchListControllerReactiveTest {
 
   @Inject
   @Client("/")
-  Rx3HttpClient client;
+  JWTWatchListClient client;
 
   @Inject InMemoryAccountStore inMemoryAccountStore;
 
@@ -44,13 +45,8 @@ class WatchListControllerReactiveTest {
 
   @Test
   void returnsEmptyWatchListForTestAccount() {
-    BearerAccessRefreshToken token = givenMyUserIsLoggedIn();
-    var request =
-        GET(ACCOUNT_WATCHLIST_REACTIVE)
-            .bearerAuth(token.getAccessToken())
-            .accept(MediaType.APPLICATION_JSON);
-
-    final Single<WatchList> result = client.retrieve(request, WatchList.class).singleOrError();
+    final Single<WatchList> result =
+        client.retrieveWatchList(getAuthorizationHeader()).singleOrError();
     assertNull(result.blockingGet().symbols());
     assertTrue(inMemoryAccountStore.getWatchList(TEST_ACCOUNT_ID).symbols().isEmpty());
   }
@@ -58,28 +54,17 @@ class WatchListControllerReactiveTest {
   @Test
   void returnsWatchListForTestAccountAsSingle() {
     givenWatchListForAccountExists();
-    BearerAccessRefreshToken token = givenMyUserIsLoggedIn();
-    var request =
-        GET(ACCOUNT_WATCHLIST_REACTIVE + "/single")
-            .bearerAuth(token.getAccessToken())
-            .accept(MediaType.APPLICATION_JSON);
-
-    var response = client.toBlocking().retrieve(request, WatchList.class);
-    assertEquals(3, response.symbols().size());
+    final Single<WatchList> result =
+        client.retrieveWatchListAsSingle(getAuthorizationHeader());
+    assertEquals(3, result.blockingGet().symbols().size());
     assertEquals(3, inMemoryAccountStore.getWatchList(TEST_ACCOUNT_ID).symbols().size());
   }
 
   @Test
   void canUpdateWatchListForTestAccount() {
     var symbols = Stream.of("AAPL", "GOOGL", "MSFT").map(Symbol::new).toList();
-
-    BearerAccessRefreshToken token = givenMyUserIsLoggedIn();
-    var request =
-        PUT(ACCOUNT_WATCHLIST_REACTIVE, new WatchList(symbols))
-            .bearerAuth(token.getAccessToken())
-            .accept(MediaType.APPLICATION_JSON);
-
-    final HttpResponse<Object> added = client.toBlocking().exchange(request);
+    final HttpResponse<Object> added =
+        client.updateWatchList(getAuthorizationHeader(), new WatchList(symbols));
     assertEquals(HttpStatus.OK, added.getStatus());
     assertEquals(symbols, inMemoryAccountStore.getWatchList(TEST_ACCOUNT_ID).symbols());
   }
@@ -88,16 +73,15 @@ class WatchListControllerReactiveTest {
   void canDeleteWatchListForTestAccount() {
     givenWatchListForAccountExists();
     assertFalse(inMemoryAccountStore.getWatchList(TEST_ACCOUNT_ID).symbols().isEmpty());
-
-    BearerAccessRefreshToken token = givenMyUserIsLoggedIn();
-    var request =
-        DELETE(ACCOUNT_WATCHLIST_REACTIVE)
-            .bearerAuth(token.getAccessToken())
-            .accept(MediaType.APPLICATION_JSON);
-
-    var deleted = client.toBlocking().exchange(request);
+    var deleted =
+        client.deleteWatchList(
+                getAuthorizationHeader(), WatchListControllerReactive.ACCOUNT_ID);
     assertEquals(HttpStatus.NO_CONTENT, deleted.getStatus());
     assertTrue(inMemoryAccountStore.getWatchList(TEST_ACCOUNT_ID).symbols().isEmpty());
+  }
+
+  private String getAuthorizationHeader() {
+    return "Bearer "  +   givenMyUserLoggedIn().getAccessToken();
   }
 
   private void givenWatchListForAccountExists() {
@@ -106,15 +90,8 @@ class WatchListControllerReactiveTest {
         new WatchList(Stream.of("AAPL", "GOOGL", "MSFT").map(Symbol::new).toList()));
   }
 
-  private BearerAccessRefreshToken givenMyUserIsLoggedIn() {
-    final UsernamePasswordCredentials credentials =
-        new UsernamePasswordCredentials("my-user", "secret");
-    var login = HttpRequest.POST("/login", credentials);
-    var response = client.toBlocking().exchange(login, BearerAccessRefreshToken.class);
-    assertEquals(HttpStatus.OK, response.getStatus());
-    var token = response.getBody().get();
-    assertEquals("my-user", token.getUsername());
-    LOG.debug("Login Bearer Token: {} expires in {}", token.getAccessToken(), token.getExpiresIn());
-    return token;
+  private BearerAccessRefreshToken givenMyUserLoggedIn() {
+    var login = client.login(new UsernamePasswordCredentials("my-user", "secret"));
+    return login;
   }
 }

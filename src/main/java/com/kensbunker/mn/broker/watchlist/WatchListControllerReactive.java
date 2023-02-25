@@ -58,9 +58,9 @@ public class WatchListControllerReactive {
   }
 
   @Status(HttpStatus.NO_CONTENT)
-  @Delete(produces = MediaType.APPLICATION_JSON)
+  @Delete(value = "/{accountId}",produces = MediaType.APPLICATION_JSON)
   @ExecuteOn(TaskExecutors.IO)
-  public void delete() {
-    store.deleteWatchList(ACCOUNT_ID);
+  public void delete(@PathVariable String accountId) {
+    store.deleteWatchList(UUID.fromString(accountId));
   }
 }
